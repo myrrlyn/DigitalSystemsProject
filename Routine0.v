@@ -2,21 +2,20 @@
 //  Light Routine 0
 //  Linear Oscillating LEDs, mod-16 Counters
 
-module Routine0(Clock, LedRed, LedGrn, Hex0, Hex1, Hex2, Hex3);
-  input        Clock;
-  output  [9:0]LedRed;
+module Routine0(Clock, OutputBus);
+  input         Clock;
+  output  [45:0]OutputBus;
      reg  [9:0]LedRed;
-  output  [7:0]LedGrn;
      reg  [7:0]LedGrn;
-  output  [6:0]Hex0;
-  output  [6:0]Hex1;
-  output  [6:0]Hex2;
-  output  [6:0]Hex3;
-  
-  reg     [2:0]GrnState;
-  reg     [3:0]RedState;
-  reg     [3:0]HexState;
-  
+    wire  [6:0]Hex0;
+    wire  [6:0]Hex1;
+    wire  [6:0]Hex2;
+    wire  [6:0]Hex3;
+
+     reg  [2:0]GrnState;
+     reg  [3:0]RedState;
+     reg  [3:0]HexState;
+
   always @ (posedge Clock)
   begin
     //  Oscillate the green LEDs
@@ -60,4 +59,12 @@ module Routine0(Clock, LedRed, LedGrn, Hex0, Hex1, Hex2, Hex3);
   myrrBcd7sdDecoder14 Hex1Display(HexState, Hex1);
   myrrBcd7sdDecoder14 Hex2Display(HexState, Hex2);
   myrrBcd7sdDecoder14 Hex3Display(HexState, Hex3);
+  
+  //  Assign individual output components to the bus
+  assign OutputBus[45:36] = LedRed;
+  assign OutputBus[35:28] = LedGrn;
+  assign OutputBus[27:21] = Hex3;
+  assign OutputBus[20:14] = Hex2;
+  assign OutputBus[13:7] = Hex1;
+  assign OutputBus[6:0] = Hex0;
 endmodule
