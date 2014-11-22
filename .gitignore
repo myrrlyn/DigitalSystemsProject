@@ -1,0 +1,21 @@
+# Quartus generated block schematics
+*.bsf
+
+# Quartus assembly information
+*.pin
+
+
+# Quartus assembly report
+*.rpt
+*.summary
+*.done
+
+# Quartus compiled files
+*.cdf
+*.[ps]of
+*.qpf
+/db/*
+/incremental_db/*
+
+# Do NOT ignore the .qsf files
+!*.qsf
