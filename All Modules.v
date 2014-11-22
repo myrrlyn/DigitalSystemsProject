@@ -1,8 +1,6 @@
 //  Alexander Payne
 //  All Verilog Modules
 
-//#region Multiplexers
-
 //  1-bit 2->1 Multiplexer
 module myrrMux121(Input1, Input0, Select, Output);
   //  1-bit Input lines
@@ -218,7 +216,7 @@ module myrrBcd7sdDecoder14(Input, Output);
       //  SSD section  :    GFEDCBA
     endcase
   end
-endmodule
+endmodule
 
 //  BCD -> Seven-Segment Display Decoder
 //  This module is designed to be used when only one cell's worth of information
