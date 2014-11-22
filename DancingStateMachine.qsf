@@ -110,9 +110,11 @@ set_location_assignment PIN_V12 -to SW[3]
 set_location_assignment PIN_M22 -to SW[2]
 set_location_assignment PIN_L21 -to SW[1]
 set_location_assignment PIN_L22 -to SW[0]
+set_global_assignment -name VERILOG_FILE Routine3.v
+set_global_assignment -name VERILOG_FILE Routine2.v
 set_global_assignment -name VERILOG_FILE Routine1.v
 set_global_assignment -name VERILOG_FILE Routine0.v
-set_global_assignment -name VERILOG_FILE RoutineDemux.v
+set_global_assignment -name VERILOG_FILE RoutineDecoder.v
 set_global_assignment -name VERILOG_FILE "Seven-Segment Display Drivers.v"
 set_global_assignment -name VERILOG_FILE PRNG.v
 set_global_assignment -name VERILOG_FILE Clocks.v

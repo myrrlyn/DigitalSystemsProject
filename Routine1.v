@@ -3,16 +3,16 @@
 //  Linear Oscillating LEDs, mod-16 Counters
 
 module Routine1(Clock, Reset, OutputBus);
-  input         Clock;
-  input         Reset;
-  output  [45:0]OutputBus;
+  input        Clock;
+  input        Reset;
+  output [45:0]OutputBus;
     wire  [6:0]Hex0;
     wire  [6:0]Hex1;
     wire  [6:0]Hex2;
     wire  [6:0]Hex3;
 
      reg  [4:0]LedState;
-     reg  [17:0]LedList;
+     reg [17:0]LedList;
      reg  [3:0]HexState;
 
   always @ (posedge Clock)

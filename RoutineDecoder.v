@@ -4,11 +4,15 @@
 module RoutineDecoder(Select,
  R0,
  R1,
+ R2,
+ R3,
  LedRed, LedGrn,
  Hex0, Hex1, Hex2, Hex3);
   input   [9:0]Select;
   input   [45:0]R0;
   input   [45:0]R1;
+  input   [45:0]R2;
+  input   [45:0]R3;
   reg     [45:0]Out;
   output  [9:0]LedRed;
   output  [7:0]LedGrn;
@@ -19,8 +23,12 @@ module RoutineDecoder(Select,
 
   always @ (*)
   begin
-    if (Select == 10'b00000_00001)
+    if (Select[9] == 1)
       Out = R1;
+    else if (Select[8] == 1)
+      Out = R2;
+    else if (Select[7] == 1)
+      Out = R3;
     else
       Out = R0;
   end
