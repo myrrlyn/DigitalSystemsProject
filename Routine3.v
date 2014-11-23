@@ -5,33 +5,42 @@
 module Routine3(Clock, Reset, OutputBus);
   input        Clock;
   input        Reset;
-  output [45:0]OutputBus;
+  output [46:0]OutputBus;
 
-     reg  [4:0]LedState;
-     reg [17:0]LedList;
-     reg  [4:0]SsdState;
-     reg [27:0]SsdDisp;
+  reg     [4:0]LedState;
+  reg    [17:0]LedList;
+  reg     [4:0]SsdState;
+  reg    [27:0]SsdDisp;
+  reg     [4:0]RtnState;
+  reg          SIGOUT;
 
   always @ (posedge Clock)
-  begin
+   begin
+    //  HARD RESET
+    if (Reset == 1'b1)
+     begin
+      LedState = 5'b00000;
+      SsdState = 5'b00000;
+      RtnState = 5'b00000;
+     end
     //  Oscillate the LEDs
     if (LedState == 5'b00000)
-    begin
+     begin
       LedList = 18'b00000_00000_0000_1111;
-    end
+     end
     else if (LedState < 5'b01111)
-    begin
+     begin
       LedList = LedList << 1;
-    end
+     end
     else if (LedState < 5'b11100)
-    begin
+     begin
       LedList = LedList >> 1;
-    end
+     end
     else if (LedState == 5'b11100)
-    begin
+     begin
       LedList = LedList >> 1;
       LedState = 5'b00000;
-    end
+     end
     //  Cycle the four 7SD displays
     //  Note: For ease of reading, 0 denotes off and 1 on; these will be
     //  inverted in the ouput assignment to fit the LCD conventions.
@@ -71,13 +80,18 @@ module Routine3(Clock, Reset, OutputBus);
       5'b11101 : SsdDisp = SsdDisp             - (1 << 2);
       5'b11110 : SsdState = 5'b11111;
     endcase
+    if (SsdState == 5'b11110)
+     begin
+      SIGOUT = 1'b1;
+     end
 
-    LedState = Reset ? LedState + 1 : 5'b00000;
-    SsdState = Reset ? SsdState + 1 : 5'b00000;
-    SsdDisp  = Reset ? SsdDisp      : 28'b0000000_0000000_0000000_0000000;
-  end
+    LedState = LedState + 1;
+    SsdState = SsdState + 1;
+    RtnState = RtnState + 1;
+   end
 
   //  Assign individual output components to the bus
+  assign OutputBus[46]    = SIGOUT;
   assign OutputBus[45:28] = LedList;
   assign OutputBus[27:21] = ~SsdDisp[27:21];
   assign OutputBus[20:14] = ~SsdDisp[20:14];
