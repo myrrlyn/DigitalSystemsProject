@@ -7,7 +7,6 @@ module Routine2(Clock, Reset, OutputBus);
   input        Reset;
   output [46:0]OutputBus;
 
-  reg     [4:0]LedState;
   reg    [17:0]LedList;
   reg     [3:0]SsdState;
   reg    [27:0]SsdDisp;
@@ -19,18 +18,9 @@ module Routine2(Clock, Reset, OutputBus);
     //  HARD RESET
     if (Reset == 1'b1)
      begin
-      LedState = 5'b00000;
+      LedList = 18'b00000_00000_0000_0000;
       SsdState = 4'b0000;
       RtnState = 6'b000000;
-     end
-    //  Rotate the LEDS
-    if (LedState == 3'b000)
-     begin
-      LedList = 18'b00000_00000_0000_1111;
-     end
-    else
-     begin
-      LedList = LedList << 1;
      end
     //  Cycle the four 7SD displays
     //  Note: to make the mathematical logic work properly, the number strings
@@ -40,6 +30,9 @@ module Routine2(Clock, Reset, OutputBus);
     //  2222222 2111111 1111000 0000000 <<
     //  7654321 0987654 3210987 6543210 <<
     case (SsdState)
+      //  The conditional operators allow the routine to begin a new pattern
+      //  while the first is still exiting, yet not cause horrendous math errors
+      //  if those cells are blank (first run).
       4'b0000 : SsdDisp = SsdDisp + (1 << 3)  - (SsdDisp[14] ? 1 << 14 : 0);
       4'b0001 : SsdDisp = SsdDisp + (1 << 10) - (SsdDisp[21] ? 1 << 21 : 0);
       4'b0010 : SsdDisp = SsdDisp + (1 << 17);
@@ -58,7 +51,10 @@ module Routine2(Clock, Reset, OutputBus);
       4'b1111 : SsdDisp = SsdDisp             - (1 << 7);
     endcase
 
-    LedState = LedState + 1;
+    //  Rotate the LEDS
+    LedList = LedList - 1;
+    LedList = LedList >> 1;
+
     SsdState = SsdState + 1;
     RtnState = RtnState + 1;
     if (RtnState == 4'b0001 && SsdDisp[21])

@@ -17,7 +17,12 @@ module RoutineDecoder(Clock, Select,
   input  [46:0]R1;
   input  [46:0]R2;
   input  [46:0]R3;
-  //  Signal to reset all routines
+  //  Signal to reset all routines. Tie this to bit 46 of the active routine.
+  //  All routines send their SIGOUT on bit 46, and reset to 0-state when their
+  //  local Reset line goes high. This output line will be tied back to the
+  //  Reset inputs of the Routine modules, triggering a global reset when the
+  //  selected Routine finishes. We have no reason to care about unused Routine
+  //  SIGOUT completion signals.
   output       NewChoice;
   //  Actual pin outputs
   output  [9:0]LedRed;
@@ -27,46 +32,77 @@ module RoutineDecoder(Clock, Select,
   output  [6:0]Disp2;
   output  [6:0]Disp3;
 
+  //  Initialization flag -- used to determine if the program is just starting
+  //  or continuing.
+  reg          Init;
   //  Routine output bus
   reg          NewChoice;
   reg    [45:0]Out;
   //  Current routine memory
-  reg          Await;
+  reg     [1:0]CurrentRoutine;
   //  Sampled random-input bits
   wire    [1:0]RandomChoice;
-  assign RandomChoice = Select[7:6];
+  assign RandomChoice[1] = Select[15];
+  assign RandomChoice[0] = Select[11];
 
   //  Select next routine on the completion signal
   always @ (posedge Clock)
    begin
-    if (RandomChoice == 2'b11)
+    //  All registers are initialized to zero, so if this is zero, the program
+    //  has just started, and we will want to immediately display a routine
+    //  rather than waiting on other functions to allow a display choice. This
+    //  is especially mandatory as without it, NO routine will be displayed for
+    //  an unacceptably long interval upon startup.
+    if (Init == 1'b0)
      begin
-      NewChoice = 1'b0;
-      Out = R3[45:0];
-      Await = R3[46];
+      //  Display Routine0
+      CurrentRoutine = 2'b0000;
+      //  Once bootstrapped, the process is self-sustaining, so this flag should
+      //  be disabled.
+      Init = 1'b1;
      end
-    else if (RandomChoice == 2'b10)
+    //  Alter CurrentRoutine when NewChoice pulses. Hopefully, this changeover
+    //  will be done shortly before the actual output line changes over, but it
+    //  shouldn't really matter. Note that NewChoice should never be HIGH for
+    //  consecutive clock cycles, so this condition should only ever fire at
+    //  end-of-routine. This should also add to the apparent randomness of the
+    //  selection PRNG, which is random in large scale but periodic in detail.
+    if (NewChoice == 1'b1)
      begin
-      NewChoice = 1'b0;
-      Out = R2[45:0];
-      Await = R2[46];
+      CurrentRoutine = RandomChoice;
      end
-    else if (RandomChoice == 2'b01)
-     begin
-      NewChoice = 1'b0;
-      Out = R1[45:0];
-      Await = R1[46];
-     end
-    else if (RandomChoice == 2'b00)
-     begin
-      NewChoice = 1'b0;
-      Out = R0[45:0];
-      Await = R0[46];
-     end
+    case (CurrentRoutine)
+      2'b00:
+       begin
+        Out = R0[45:0];
+        NewChoice = R0[46];
+       end
+      2'b01:
+       begin
+        Out = R1[45:0];
+        NewChoice = R1[46];
+       end
+      2'b1:
+       begin
+        Out = R2[45:0];
+        NewChoice = R2[46];
+       end
+      2'b11:
+       begin
+        Out = R3[45:0];
+        NewChoice = R3[46];
+       end
+      default:
+       begin
+        Out = R0[45:0];
+        NewChoice = R0[46];
+       end
+    endcase
    end
 
   //  Decompress the routine bus into pin groups.
-  assign LedRed = Out[45:36];
+  assign LedRed[9:2] = Out[45:38];
+  assign LedRed[1:0] = Out[37:36];
   assign LedGrn = Out[35:28];
   assign Disp3   = Out[27:21];
   assign Disp2   = Out[20:14];
